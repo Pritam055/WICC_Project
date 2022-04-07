@@ -2,14 +2,16 @@
 This is my final project in WICC (Winter Code Camp). 
 
 The project is about an online hotel room booking system. The name of the website is YOYO hotels.
-The project contains features like:
-- three types of user customer, hotel owner and admin user 
-- hotel booking and cancelling
-- online payment
-- hotel owner verification
-- filtering hotel list
-- filtering data in admin dashboard 
-- creating report of users based on the date range
+Some of the feature that the project contains are:
+- three types of user: customer, hotel owner and admin user 
+- create user accounts
+- hotel room booking and cancelling
+- online payment using Khalti
+- hotel owner verification 
+- add, delete, update hotel informations
+- filter hotel list
+- filter data in admin dashboard 
+- create users report based on the date range
 
 And additionally API's are creadted for most of the functionality using DRF.
 
