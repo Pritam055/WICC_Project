@@ -1,0 +1,224 @@
+{% extends 'base.html'  %} 
+{% load static %}
+
+{% block title %}Details{% endblock title %}
+
+{% block content %} 
+
+<style type="text/css">
+	img{
+		height: 550px;
+		width: 550px;
+	}
+</style> 
+
+<div class="container mt-1 mb-4" style="width: 72%;">
+	{% if messages %}
+		{% for message in messages %}
+			<p class="alert alert-{% if message.tags %}{{message.tags}}{%else%}info{% endif %}">{{ message }}</p>
+		{% endfor %}
+	{% endif %}
+	<div class="row">
+
+		{% if hotel.hotel_images.count %}
+			<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+				<div class="carousel-inner">
+					{% for img in hotel.hotel_images.all %} 
+					<div class="carousel-item {% if forloop.first %} active {% endif %}">
+						<img class="d-block w-100" src="{{img.image.url}}" style="width: 100%; height: 700px;" alt="First slide">
+					</div>
+					{% endfor %}
+				</div>
+
+				<a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+				  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+				  <span class="sr-only"></span>
+				</a>
+				<a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+				  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+				  <span class="sr-only"></span>
+				</a>
+			</div>
+			{% else %}
+				<!-- <p style="text-align: center;">No Image</p> -->
+                    <img src="{% static 'default_hotel.jpeg' %}" style="height: 600px; width:100%;" class="card-img-top" alt="...">
+			{% endif %}
+
+	</div>
+
+	<div class="row mt-3">  
+		<div class="col-lg-5 border" style="border-radius: 20px;">
+			<h3 class="mt-3" style="color:rgb(236, 0, 0); text-align: center;" >{{hotel.name}}</h3>
+			<hr>
+			<div class="container-fluid">
+				<div class='row'>
+					<div class='col-lg-7 border'>
+                        <p><b>Address:</b> {{hotel.address}}</p>
+						<p><b>Phone:</b> {{hotel.phone}}</p>
+						<p><b>Email:</b> {{hotel.email}}</p>
+                        <p><b>Hotel Owner:</b> {{hotel.owner}}</p>
+						<p><b>Avg. Rating:</b> {{hotel.rate}}</p>
+					</div>
+
+					<div class="col-lg-5 border">   
+                        <p><b>Per Room Price:</b> NPR{{hotel.room_price}}</p>
+                        <p><b>Total Rooms:</b> {{hotel.total_rooms}}</p>
+                        <p style="color: {% if hotel.available_rooms == 0 %}red{% else %}black{% endif %};" ><b>Available Rooms:</b> {{hotel.available_rooms}}</p> 
+                        <p><b>Estd. :</b> {{hotel.established}}</p>
+							
+							{% if request.user.is_authenticated %}
+								{% if hotel.owner == request.user %}
+										<p>
+											<a href="{% url 'hotels:hotel_update' hotel.owner.id %}" class="btn btn-info" style="width: 100%;">Update Details</a>
+										</p>
+								{% endif %}
+								<p>
+									<a href="{% url 'hotels:hotel_reserve' hotel.owner.id %}" id="bookId"  class="btn btn-success" style="width: 100%;">Book</a>
+								</p>
+							{% endif %}
+					</div>
+				</div>
+			</div>
+			<hr>
+			<p><h5>Description:</h5>{{hotel.description}}</p>
+			<hr>    
+		</div>
+
+		<div class="col-lg-7 border" style="border-radius: 20px;" >
+			<div class="mt-2 mb-3 overflow-auto">
+				<p style="font-family: 'Brush Script MT', cursive; font-size:26px; color:rgb(24, 156, 218);text-align: center;" >Google map location</p>
+				<div  style="text-align:center;">{{hotel.map_link|safe}}</div>
+			</div>				
+		</div> 
+	</div>  
+	
+	<!-- <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d18124.933341512497!2d85.28847587659688!3d27.701880068648517!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x44edd8fc9a17af63!2sThe%20Soaltee%20Kathmandu!5e0!3m2!1sen!2snp!4v1645784928491!5m2!1sen!2snp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe> -->  
+ 
+	<h3>Comments</h3>
+	{% if request.user.is_authenticated %}
+		<form method="POST" id="commentForm">
+			{% csrf_token %}
+
+			<div class="mb-3"> 
+				<textarea  class="form-control" id="comment" rows="5" name="content" placeholder="Comment..."></textarea>
+				<div id="comment" class="form-text"></div>
+			</div>
+			<input type="submit" value="Comment" class="btn btn-success mb-3">
+		</form>
+	{% endif %}
+	<div id="commentsId"> 
+			{% for comment in comment_list %}
+				<p><b>{{ comment.customer.username }}</b> on <span class="text-muted">{{ comment.date_time }}</span> <br>{{ comment.content }}</p>
+			{% endfor %}   
+	</div>	
+</div>  
+
+
+<div class="modal fade" id="bookModal" tabindex="-1">
+	<div class="modal-dialog">
+	  <div class="modal-content">
+
+	  </div>
+	</div>
+  </div>
+
+<script>
+	function closeModal(){
+		$('#bookModal').modal('hide');
+	}
+
+
+//--------------comment part 
+$('#commentForm').on('submit', function(e){
+            e.preventDefault();
+            let formData = new FormData(this);  
+            const hotelId = "{{hotel.owner.id}}";
+            const commentUrl = "{% url 'hotels:hotel_comment' 11 %}".replace(11, hotelId );
+
+            $.ajax({
+			url: commentUrl,
+			method:'POST',
+			data: formData,
+			processData:false,
+			contentType: false,
+			
+			success: function(resp){
+				$('#commentForm')[0].reset(); 
+				let instance = resp.instance; 
+				let r = `<p><b>${instance.customer}</b> on<span class="text-muted">${instance.date_time}</span> <br>${instance.content}</p>`;
+				// $('#commentsId').append(r);
+				$('#commentsId').prepend(r);
+				 
+			},
+			error: function(response){
+				// console.log(err);
+				const data = JSON.parse(response['responseText']);
+				if(data.errors){
+					alert(data.errors.content[0]);
+				}
+				else{
+					alert(response);
+				}
+			}
+		})
+})
+
+
+// ------------reservation part
+	$('#bookId').on('click', function(e){
+		e.preventDefault();
+		const href = $(this).attr('href'); 
+
+		$.get(href,function(data){
+			// console.log(typeof data, data); 
+			$('#bookModal .modal-content').empty().append(data);
+			$('#bookModal').modal('show');  
+		});
+	})
+
+
+	$('body').on('submit','#reservationFormId', function(e){
+		e.preventDefault();
+		let formData = new FormData(this);
+		const hotelId = $(this).attr('data-hotelId');
+		let url = "{% url 'hotels:hotel_reserve' 11 %}".replace(11, hotelId);
+		
+		$.ajax({
+			url: url,
+			method: 'POST',
+			data:formData,
+			processData: false,
+			contentType: false,
+
+			success: function(response){
+				console.log(response, typeof response)
+
+				$('#bookModal').modal('hide');
+				alert('Hotel room is booked successfully.')
+				location.reload();
+			},
+
+			error: function(response){ 
+				data = JSON.parse(response['responseText']); 
+				if(data['errors']){
+					errors= data['errors']  
+					$('small.error').remove();
+					for(key in errors){ 
+						if ($(`[name="${key}Error"`).length){
+							$(`[name="${key}Error"]`).text(errors[key]);
+						}else{ 
+							$(`[name="${key}"`).parent().append(`<small name="${key}Error" class="error" style="color:red">${errors[key]}</small>`);
+						}
+					}  
+				}else{
+					alert(data['data']);
+				}	
+			}
+		})
+
+	})
+
+
+</script>
+
+{% endblock  %} 

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <title>Report</title>
+         
+    <style>
+       * {
+            font-size: 15px;
+        } 
+        table {
+            table-layout: fixed;
+            width: 100%;
+            border: 1px solid black;
+        }
+
+        table th {
+            text-align: center;
+            padding: 3px;
+            padding-bottom: 0;
+        }
+
+        table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 3px;
+            padding-bottom: 0;
+        }  
+        </style>
+    </head>
+
+    <body>
+        <div style="text-align: center;">
+            <h1>YOYO Reservation Report</h1>
+            <p>Report Date: {{datetime}}</p>
+        </div>
+        <div style="margin-bottom: 10px;">
+            <span >
+                {% if fromDate and toDate %}       
+                    <b>From-Date:</b> {{fromDate}}, 
+                    <b>To-Date:</b> {{toDate}}
+                {% else %}
+                    {% if fromDate %}
+                        <b>Date:</b> {{fromDate}}
+                    {% elif toDate %}
+                        <b>Date:</b> {{toDate}}
+                    {% else %}
+                        <b>Date:</b> All
+                    {% endif %}
+                {% endif %}
+            
+            </span>, 
+            <span><b>Total Records:</b> {{record.count}}</span> 
+        </div>
+        <table style="text-align: center;">
+            <thead> 
+                <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Hotel</th>
+                    <th>Checkin-Date</th>
+                    <th>Checkout-Date</th> 
+                    <th>Paid</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody> 
+                {%for data in record%}
+                <tr>
+                    <td style="width: 4%;">{{forloop.counter}}</td>
+                    <td>{{data.customer.username}}</td>
+                    <td>{{data.hotel.name}}</td>
+                    <td>{{data.checkin_date}}</td>
+                    <td>{{data.checkout_date}}</td> 
+                    <td> {{data.paid}} </td>
+                    <td>NPR{{data.amount}}</td>
+                </tr>
+                {%endfor%}
+                <tr>
+                    <td> </td>
+                    <td> </td>
+                    <td> </td>
+                    <td> </td>
+                    <td> </td> 
+                    <th>Total Amount</th>
+                    <th>NPR{{ total_amount }}</th>
+                </tr>
+            </tbody>
+        </table>
+ 
+    </body>
+
+</html>

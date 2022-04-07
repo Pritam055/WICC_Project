@@ -1,0 +1,78 @@
+ 
+<div class="modal-header"> 
+    <p style="font-family: 'Brush Script MT', cursive; font-size:26px; display: inline; " >User Details</p>
+</div>   
+
+<div class="modal-body"> 
+
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th scope="row">Username</th>
+                <td>{{user_obj.username}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Address</th>
+                <td>{{user_obj.address}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Phone</th>
+                <td>{{user_obj.phone}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Email</th>
+                <td>{{user_obj.email}}</td>
+            </tr>
+            <tr>
+                <th scope="row">User-Type</th>
+                <td>{{user_obj.user_type}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Date-Joined</th>
+                <td>{{user_obj.date_joined}}</td>
+            </tr>
+            {% if has_certificate %}
+            <tr>
+                <th scope="row">Certificate</th>
+                <td>
+                    <a href="{{user_obj.certificate.image.url}}" target="_blank"> <img src="{{user_obj.certificate.image.url}}" height="200px" width="300px"></a>
+                </td>
+            </tr>
+            {% endif %} 
+
+            <tr>
+                <th scope="row">Verified</th>
+                <td>
+                    {% if user_obj.verified %}
+                        <span class="badge rounded-pill bg-info text-dark">verified</span>
+                    {% else %}
+                        <span class="badge rounded-pill bg-warning text-dark">not verified</span>
+                        <form id="verifyAccountFormId" data-userId="{{user_obj.id}}" method="post" style="display: inline;" class="mx-2">
+                            {% csrf_token %}
+                            <input type="submit" value="Verify Owner" class="btn btn-sm btn-success">
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+
+            <!-- {% if reservation.checkin_status == "pending" %}
+            <tr>
+                <th scope="row">Cancel Booking</th>
+                <td> 
+                    <form method="post" id="cancelBookingId" data-reservationId="{{reservation.id}}">
+                        {% csrf_token %}
+                        <input type="submit"  class="btn btn-danger" value="Cancel Booking" style="width: 100%;" />
+                    </form>
+                </td>
+            </tr>
+            {% endif %} -->
+ 
+        </tbody>
+
+    </table>
+    
+</div>
+
+<div class="modal-footer"> 
+    <button type="button" onclick="closeModal()" class="btn btn-secondary" data-bs-dismiss="modal" style="padding-left: 30px; padding-right: 30px;">Close</button>
+</div> 

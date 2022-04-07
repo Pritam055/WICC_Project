@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div style="display: flex;" class="mt-1">
+    <p style="font-family: 'Brush Script MT', cursive; font-size:35px; display: inline;" >All Hotels</p>
+
+    <form class="mx-auto py-3 " id="searchFormId" style="display: flex; width: 45%;" action="{% url 'hotels:hotel_search' %}" method="get" > 
+        <input class="form-control" type="search" name="search" placeholder="Search hotel..." aria-label="Search">
+        <input class="btn btn-success" type="submit" style="padding-left: 30px; padding-right: 30px" value="Search"> 
+    </form>
+    
+    <div class="py-3" style="display: flex; margin-right: 10px;">
+        <select class="form-select form-select-lg " name="category" id="hotelSortSelectId">
+            <option value="">Sort By</option> 
+            <option value="name">Hotel name</option> 
+            <option value="room_price">Room price</option>
+        </select>
+    </div>
+
+    <div class="mr-0 py-3" style="display: flex; float:right;">
+        <select class="form-select form-select-lg " name="category" id="hotelAddressId">
+            <option value="">Select City</option>
+            {% for addr in address_list %}
+                <option>{{addr}}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<hr>
+    <div class="row my-3" id="hotelListId">
+        
+        {% for hotel in hotel_list %}
+        <div class="col-sm-3 mt-3 mb-2" >
+            <div class="card card-hover" id="card1" >
+                {% with h=hotel.hotel_images.all %} 
+                    <img src="{% if h.count > 0 %} {{h.first.image.url}} {% else %} {% static 'default_hotel.jpeg' %} {% endif %}" style="height: 280px; width:100%;" class="card-img-top" alt="...">
+                {% endwith %}
+                <div class="card-body">
+                    <a href="{% url 'hotels:hotel_detail' hotel.owner.id %}" style="text-decoration: none;"><h5 class="card-title">{{hotel.name|truncatechars:33}}</h5></a>
+                    <p class="card-text">{{ hotel.address|truncatechars:35 }}</p> 
+                    <p class="alert alert-secondary">Per Room Price: <b>NPR{{hotel.room_price}}</b></p>
+                </div>
+            </div>
+        </div> 
+        {% endfor %}
+        
+        <nav aria-label="Page navigation example" class="mt-2 mb-3">
+            <ul class="pagination justify-content-center">
+
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" tabindex="-1">Previous</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="?page={{ page_obj.number }}" tabindex="-1">Previous</a>
+                </li>
+                {% endif %}
+                  
+              <li class="page-item"><a class="page-link" href="?page={{ page_obj.number }}"> {{ page_obj.number }}</a></li>
+
+              {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+              </li>
+              {% else %}
+              <li class="page-item disabled">
+                <a class="page-link" href="?page={{ page_obj.number }}">Next</a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+                   
+    </div>
+
+<script>
+
+ 
+$('body').on('change', '#hotelSortSelectId', function(e){
+    const sort_param = $(this).val();
+    const address_param = $('#hotelAddressId').val();
+    const url = "{% url 'hotels:hotel_sort' %}?sort=" + sort_param + "&address=" + address_param;
+    // console.log(sort_param, address_param, url);
+            
+    $.get(url, function(response){
+        $('#hotelListId').empty().append(response);
+    });
+})
+
+
+$('body').on('change', '#hotelAddressId', function(e){
+    const sort_param = $('#hotelSortSelectId').val();
+    const address_param = $(this).val();
+    const url = "{% url 'hotels:hotel_sort' %}?sort=" + sort_param + "&address=" + address_param;
+    // console.log(sort_param, address_param, url);
+
+    $.get(url, function(response){
+        $('#hotelListId').empty().append(response);
+    });
+})
+
+
+</script>
+{% endblock %}

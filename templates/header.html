@@ -1,0 +1,51 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light " style="padding-left:75px; padding-right: 75px;">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{% url 'hotels:hotel_list' %}" style="font-size:25px ;">YOYO</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'hotels:hotel_list' %}"> Home </a>
+          </li>  
+          {% if is_adminMember %}
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'accounts:dashboard' %}">Dashboard</a>
+            </li> 
+          {% endif %}
+
+          {% if is_hotelOwnerMember %}
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'accounts:myhotel_reservation' %}">Reservations</a>
+            </li> 
+          {% endif %}
+          <!-- <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'stats:report' %}">Report</a>
+          </li>  -->
+
+        </ul>
+        <!-- <form class="d-flex">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form> -->
+
+        <div class="d-flex" >
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'accounts:profile' %}" style=" text-decoration: none;" class=" position-relative"> 
+                <img style="height: 30px; width: 30px; border-radius: 20px;" src="{% static 'default_image.jpg' %}" alt="">
+                <b>{{request.user.username}}</b>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="margin-left: 5px;">
+                  {{my_reservationCount}} 
+                </span>
+            </a>
+            <a href="{% url 'accounts:logout' %}" style="margin-left: 25px; text-decoration: none;color:black;">Logout</a>
+        {% else %} 
+            <a class="nav-link" href="{% url 'accounts:signup' %}" style="color:black;">Signup</a> 
+            <a class="nav-link" href="{% url 'accounts:login' %}" style="color:black;">Login</a>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>

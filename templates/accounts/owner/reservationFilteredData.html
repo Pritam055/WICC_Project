@@ -1,0 +1,22 @@
+{% for r in reservation_list %}
+    <tr>
+    <td>{{forloop.counter}}</td>
+    <td>{{r.customer.username}}</td>
+    <td>{{r.no_of_rooms}}</td> 
+    <td>{{r.reserved_date}}</td> 
+    <td>
+        <small class='badge bg-{% if r.checkin_status == "reserved" %}warning text-dark{% elif r.checkin_status == "checked_in" %}info text-dark{% else %}success{% endif %}'>{{r.checkin_status}}</small>
+    </td>
+    <td>
+        {% if r.paid %}
+        <input class="form-check-input" type="checkbox" checked disabled>
+        {% else %}
+        <input class="form-check-input" type="checkbox" disabled>
+        {% endif %}
+    </td>
+    <td>
+        <a href="{% url 'accounts:customer_reservation_detail' r.id %}" class="btn btn-info" id="detailCustomerReservationId">Details</a>
+    </td>
+    
+    </tr> 
+{% endfor %}

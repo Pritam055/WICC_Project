@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reservations{% endblock %}
+
+{% block css %}
+  .chart-container{
+    width: 400px;
+    height:400px
+  }
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+      <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div class="position-sticky pt-3">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'accounts:myhotel_reservation' %}"> 
+                All Reservations
+              </a>
+            </li> 
+
+          </ul>
+  
+          <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Saved reports</span>
+            <a class="link-secondary" href="#" aria-label="Add a new report">
+              <span data-feather="plus-circle"></span>
+            </a>
+          </h6>
+          <ul class="nav flex-column mb-2">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'stats:report' %}" id="myHotelReportId"> 
+                Report
+              </a>
+            </li> 
+          </ul>
+        </div>
+      </nav>
+  
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" id="dashboardDataId">
+    
+        {% if messages %}
+            {% for message in messages %}
+                <p class="alert alert-{% if message.tags %}{{message.tags}}{%else%}info{% endif %}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row">
+            
+          <div class="col-sm-3 mt-3 mb-2"  >
+            <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+                 <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-primary">Current Customers</p>
+                <div class="card-body"> 
+                  <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;" >{{current_customer_count}} </p>
+                </div>
+            </div>
+          </div> 
+
+          <div class="col-sm-3 mt-3 mb-2"  >
+            <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+                 <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-success" >Reserved Count</p>
+                  <div class="card-body"> 
+                    <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;">{{reserved_count}}</p>
+                  </div>
+              </div>
+          </div>  
+
+          <div class="col-sm-3 mt-3 mb-2"  >
+              <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+                   <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-danger">Checked_in Count</p>
+                  <div class="card-body"> 
+                    <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;" >{{checked_in_count}}</p>
+                  </div>
+              </div>
+          </div> 
+
+          <div class="col-sm-3 mt-3 mb-2"  >
+              <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+                   <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-success" >Checked_out Count</p>
+                  <div class="card-body"> 
+                    <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;"   >{{checked_out_count}}</p>
+                  </div>
+              </div>
+          </div>  
+
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <p style="font-family: 'Brush Script MT', cursive; font-size:32px; display: inline;" >All Reservations of <span class="alert alert-secondary " > <a href="{% url 'hotels:hotel_detail' user.id %}" class="card-hover" style="text-decoration: none; color:black; display: inline-block; " target="_blank">{{hotel_name}}</a></span></p>
+          <div class="btn-toolbar mb-2 mb-md-0"> 
+            
+            <select class="btn  btn-outline-secondary dropdown-toggle mx-3" id="statusFilterId">
+                <option value="">Status filter</option>
+                <option>reserved</option>
+                <option>checked_in</option>
+                <option>checked_out</option> 
+            </select>
+
+            <select class="btn  btn-outline-secondary dropdown-toggle" id="paidFilterId">
+              <option value="">Paid filter</option> 
+                <option>True</option>
+                <option>False</option>   
+            </select>
+
+          </div> 
+
+        </div> 
+        <div class="table-responsive">
+          <table class="table table-striped table-sm">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Customer</th>
+                <th scope="col">No. of rooms</th> 
+                <th scope="col">Reserved Date</th>
+                <th scope="col">Checkin-Status</th> 
+                <th scope="col">Paid</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbodyId">
+              {% for r in reservation_list %}
+              <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{r.customer.username}}</td>
+                <td>{{r.no_of_rooms}}</td> 
+                <td>{{r.reserved_date}}</td> 
+                <td>
+                  <small class='badge bg-{% if r.checkin_status == "reserved" %}warning text-dark{% elif r.checkin_status == "checked_in" %}info text-dark{% else %}success{% endif %}'>{{r.checkin_status}}</small>
+                </td>
+                <td>
+                  {% if r.paid %}
+                    <input class="form-check-input" type="checkbox" checked disabled>
+                  {% else %}
+                    <input class="form-check-input" type="checkbox" disabled>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'accounts:customer_reservation_detail' r.id %}" class="btn btn-info" id="detailCustomerReservationId">Details</a>
+                </td>
+                
+              </tr> 
+            {% endfor %}
+            </tbody>
+          </table>
+          
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal fade" id="reservationDetailModalId" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content"></div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="updateReservationDetailModalId" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content"></div>
+    </div>
+  </div>
+<script>
+
+function closeModal(){
+    $('.modal').modal('hide');
+}
+
+$('body').on('click','#detailCustomerReservationId', function(e){
+  e.preventDefault();
+  const href = $(this).attr('href');
+
+  $.get(href, function(response){     
+    $('#reservationDetailModalId .modal-content').empty().append(response);
+    $('#reservationDetailModalId').modal('show');
+  })
+})
+//--------cancel booking
+$('body').on('submit','#cancelBookingId', function(e){
+  e.preventDefault();
+  const reservationId = $(this).attr('data-reservationId');
+  let url = "{% url 'accounts:reservation_cancel' 11 %}".replace(11, reservationId); 
+
+  if(confirm('Are you sure you want to cancel reservation?')){
+    $.post( url ,{csrfmiddlewaretoken :  $('[name="csrfmiddlewaretoken"]').val()}, function() {
+      alert( "Reservation cancelled successfully." );
+      closeModal();
+      location.reload();
+    }).fail(function() {
+      alert( "error" );
+    });
+  }
+  
+})
+
+
+$('body').on('click','#updateCustomerReservationId', function(e){
+  e.preventDefault();
+  const href = $(this).attr('href');
+
+  $.get(href, function(response){   
+    $('#reservationDetailModalId').modal('hide');
+
+    $('#updateReservationDetailModalId .modal-content').empty().append(response);
+    $('#updateReservationDetailModalId').modal('show');
+  })
+})
+
+$('body').on('submit','#upateCustomerReservationFormId', function(e){
+    e.preventDefault();
+    let formData = new FormData(this);
+    const reservationId = $(this).attr('data-reservationId');
+    let url = "{% url 'accounts:update_customer_reservation' 11 %}".replace(11, reservationId);
+    
+    $.ajax({
+      url: url,
+      method: 'POST',
+      data:formData, 
+      processData: false,
+      contentType: false,
+
+      success: function(response){ 
+
+        $('#updateReservationDetailModalId').modal('hide');
+        alert('Reservation detail is updated successfully.')
+        location.reload();
+      },
+
+      error: function(response){ 
+        data = JSON.parse(response['responseText']); 
+        if(data['errors']){
+          errors= data['errors']  
+          $('small.error').remove();
+          for(key in errors){ 
+            if ($(`[name="${key}Error"`).length){
+              $(`[name="${key}Error"]`).text(errors[key]);
+            }else{ 
+              $(`[name="${key}"`).parent().append(`<small name="${key}Error" class="error" style="color:red">${errors[key]}</small>`);
+            }
+          }  
+        }else{
+          alert(data['data']);
+        }	
+      }
+    })
+
+  })
+
+// --------------Filtering reservation data
+$('body').on('change', '#statusFilterId', function(){
+  const status = $(this).val();
+  const paid = $('#paidFilterId').val();
+  const url = "{% url 'accounts:myhotel_filter_reservations' %}?status=" + status+"&paid=" + paid;
+  console.log(paid, status)
+  $.get(url, function(response){
+    $('#tbodyId').empty().append(response);
+  })
+})
+
+$('body').on('change', '#paidFilterId', function(){
+  const paid = $(this).val();
+  const status = $('#statusFilterId').val();
+  const url = "{% url 'accounts:myhotel_filter_reservations' %}?status=" + status+"&paid=" + paid;
+  console.log(paid, status)
+  $.get(url, function(response){
+    $('#tbodyId').empty().append(response);
+  })
+})
+
+// --------------Hotel Owner Report part
+
+$('#myHotelReportId').on('click', function(e){
+  e.preventDefault();
+  const href = $(this).attr('href');
+
+  $.get(href, function(response){ 
+    // const reservation_list = JSON.parse( response['reservation_list'] );
+    const checkin_obj = {};
+    const reserved_obj = {};
+
+    $.each(response['checkin_data'], function(index, value){ 
+      checkin_obj[value['checkin_status']] = value['id__count'];
+    }) 
+    $.each(response['reserved_each_day'], function(index, value){ 
+      reserved_obj[value['reserved_date__date']] = value['id__count'];
+    }) 
+
+    const checkin_keys = Object.keys(checkin_obj); 
+    const checkin_values = Object.values(checkin_obj);
+    const reserved_keys = Object.keys(reserved_obj);
+    const reserved_values = Object.values(reserved_obj);
+
+    let result = `
+
+    <div class="row">
+            
+            <div class="col-sm-3 mt-3 mb-2"  >
+              <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+                   <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-primary">Total Customers</p>
+                  <div class="card-body"> 
+                    <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;" >${response.total_count} </p>
+                  </div>
+              </div>
+            </div> 
+  
+            <div class="col-sm-3 mt-3 mb-2"  >
+              <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+                   <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-success" >Reserved Count</p>
+                    <div class="card-body"> 
+                      <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;">${response.reserved_count}</p>
+                    </div>
+                </div>
+            </div>  
+  
+            <div class="col-sm-3 mt-3 mb-2"  >
+                <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+                     <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-danger">Checked_in Count</p>
+                    <div class="card-body"> 
+                      <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;" >${response.checked_in_count}</p>
+                    </div>
+                </div>
+            </div> 
+  
+            <div class="col-sm-3 mt-3 mb-2"  >
+                <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+                     <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-success" >Checked_out Count</p>
+                    <div class="card-body"> 
+                      <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;"   >${response.checked_out_count}</p>
+                    </div>
+                </div>
+            </div>  
+  
+          </div>
+
+                <div class="row">  
+                    <div class="col-sm-6 mt-3 mb-2" >
+                      <div class="card card-hover"  style="text-align: center; border-radius: 12px;" >
+                        <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-primary">Total Checkin-Status</p>
+                        <div class="chart-container">  
+                          <canvas id="myDoughnutChart" > ></canvas>
+                        </div>
+                      </div>
+                    </div>   
+                    <div class="col-sm-6 mt-3 mb-2"  >
+                      <div class="card card-hover"  style="text-align: center; border-radius: 12px;" >
+                        <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-primary">Total Reservations Line Chart</p>
+                        <div class="chart-container" style="width:100%">  
+                          <canvas id="myLineChart"  ></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <p style="font-family: 'Brush Script MT', cursive; font-size:35px; display: inline;" >All Reservations</p>
+                  </div> 
+                  <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">CustomerId</th>
+                          <th scope="col">No. of rooms</th> 
+                          <th scope="col">Reserved Date</th>
+                          <th scope="col">Checkin-Status</th> 
+                          <th scope="col">Paid</th> 
+                        </tr>
+                      </thead>
+                      <tbody id="tbodyId">`;  
+       
+      $.each(response['reservation_list'], function(index, r){
+        result +=`<tr>
+                    <td>${index+1}</td>
+                    <td>${r.customer}</td>
+                    <td>${r.no_of_rooms}</td> 
+                    <td>${r.reserved_date}</td> 
+                    <td>${r.checkin_status}</td>
+                    <td>${r.paid}</td> 
+                  </tr> `;
+      });
+      result += `</tbody>  </table> `;
+
+    $('#dashboardDataId').empty().append(result);
+
+    const ctx1 = document.getElementById('myDoughnutChart');
+    const myDougbnutChart = new Chart(ctx1, {
+      type: 'doughnut',
+      data: {
+          labels: checkin_keys,
+          datasets: [{
+              label: '# of Votes',
+              data: checkin_values,
+              backgroundColor: [
+              'rgb(255, 99, 132)',
+              'rgb(54, 162, 235)',
+              'rgb(255, 205, 86)'
+              ],
+            hoverOffset: 4
+          }]
+        },  
+    }); 
+
+      let bgColor =[] ;
+      for(let i=0; i < reserved_keys.length; i++){
+        bgColor.push('#'+Math.floor(Math.random()*16777215).toString(16));
+      }  
+
+    const ctx2 = document.getElementById('myLineChart');
+    const myLineChart = new Chart(ctx2, {
+      type: 'line',
+      data: {
+          labels: reserved_keys,
+          datasets: [{
+              label: '# of reservations',  
+              data: reserved_values,
+              backgroundColor: bgColor,
+            hoverOffset: 4
+          }]
+        },  
+    }); 
+
+
+  });
+
+})
+
+</script>
+
+{% endblock %}

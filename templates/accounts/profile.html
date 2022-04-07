@@ -1,0 +1,359 @@
+
+{% extends 'base.html' %}
+{% load static %} 
+
+{% block title %} Profile {% endblock %}
+
+{% block content  %}   
+<div class="container-fluid">
+    <div class="row">
+      <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div class="position-sticky pt-3">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'accounts:profile' %}">
+                My Profile
+              </a>
+            </li>
+            {% if has_certificate %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'accounts:my_certificate' %}" id="certificateLinkId"> 
+                My Certificate
+              </a>
+            </li> 
+            {% endif %}
+            {% if has_hotel %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'accounts:my_hotel_detail' %}" id="myHotelLinkId"> 
+                  My Hotel
+                </a>
+              </li>
+            {% endif %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'accounts:reservations' %}" id="reservationLinkId"> 
+              <span class=" position-relative">My Reservations
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="margin-left: 8px;">
+                  {{my_reservationCount}} 
+                </span>
+              </span>
+              </a>
+            </li> 
+
+        </div>
+      </nav>
+  
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <div class="btn-toolbar mb-2 mb-md-0"> 
+          </div>
+        </div> 
+        <div class="container" style="width: 100%;">
+            {% if messages %}
+                {% for message in messages %}
+                    <p class="alert alert-{% if message.tags %}{{message.tags}}{%else%}info{% endif %}">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+            <div class="row mb-3" id="dataContainerId">
+                    <p style="font-family: 'Brush Script MT', cursive; font-size:35px;">My Profile</p>
+                    <hr> 
+                    <div class="row">
+                        <div class="col-lg-5 border " style="text-align: center; padding: 30px; border-top-left-radius: 30px; border-bottom-left-radius: 30px; ">
+                            <img  class="rounded-circle" src="{% if request.user.profile.image %} {{request.user.profile.image.url}} {% else %}{% static 'default_image.jpg'  %}{% endif %}" height="250px" width="250px" >
+                        </div>
+                        <div class="col-lg-7 border " style="padding:30px;border-bottom-right-radius: 30px; border-bottom-right-radius: 30px;">
+                            <p>Username: <b>{{ request.user.username }}</b></p>
+                            <p>First Name: <b>{{ request.user.first_name }}</b></p>
+                            <p>Last Name: <b>{{ request.user.last_name }}</b></p>
+                            <p>User Type: <b>{{ request.user.get_user_type }}</b></p>
+                            <p>User Group: <b>{{ my_group }}</b></p>
+                            <p>Address: <b>{{ request.user.address }}</b></p>
+                            <p>Phone: <b>{{ request.user.phone }}</b></p>
+                            <p>Email: <b>{{ request.user.email }}</b></p>
+                            <p>Verified:
+                               {% if request.user.verified %}
+                                  <span class="badge rounded-pill bg-success text-light">verified</span>
+                                {% else %}
+                                  <span class="badge rounded-pill bg-warning text-dark">not verified</span>
+
+                                  <!-- <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Disabled popover">
+                                    <button class="btn btn-primary" type="button" disabled>Disabled button</button>
+                                  </span> -->
+                                    {% if not has_certificate %}
+                                      <a href="{% url 'accounts:add_owner_certificate' %}" class="btn btn-sm btn-primary mx-2" id="addOwnerCertificateId">Add Certificate</a>
+                                    {% endif %}
+                                {% endif %} 
+                            </p>
+                            <p>
+                              <button id="updateButtonId" class="btn btn-info btn-sm " style="margin-right: 5px;">Update Profile</button>
+                                {% if request.user.verified and request.user.is_hotelOwner %}
+                                    {% if not has_hotel %}
+                                        <a href="{% url 'hotels:hotel_create' %}" class="btn btn-primary btn-sm">Add Hotel</a>
+                                    {% endif %}
+                                {% endif %}
+                            </p> 
+                        </div>
+                    </div>
+        
+            </div>
+        </div>
+        
+      </main>
+    </div>
+  </div>
+  
+  <div class="modal fade" id="reservationModalId" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content"></div>
+    </div>
+  </div> 
+
+  <div class="modal fade" id="addOwnerCertificateModalId" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content"></div>
+    </div>
+  </div> 
+
+  <div class="modal fade" id="updateUserUpdateModalId" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content"></div>
+    </div>
+  </div> 
+
+<script>
+function closeModal(){
+  $('.modal').modal('hide');
+} 
+
+//---------------user update part 
+ 
+$('#updateButtonId').on('click',function(){
+  // e.preventDefault();
+  const user_id = "{{ user.id }}";
+  const url = "{% url 'accounts:update-profile' 11 %}".replace(11, user_id);
+
+  $.get(url, function(response){ 
+    $('#updateUserUpdateModalId .modal-content').empty().append(response);
+    $('#updateUserUpdateModalId').modal('show');
+  });
+})
+
+$('.modal').on('submit', '#updateMyProfileFormId', function(e){
+  e.preventDefault();
+  const user_id = "{{ user.id }}";
+  const url = "{% url 'accounts:update-profile' 11 %}".replace(11, user_id);
+  let formData = new FormData(this);
+
+  // for(let i of formData.entries()){
+  //   console.log(i)
+  // }  
+
+  $.ajax({
+    url: url,
+    method: 'POST',
+    data:formData,
+    processData: false,
+    contentType: false,
+
+    success:function(response){
+      alert("Updated successfully");
+      location.reload();
+    },
+
+    error: function(response){ 
+      data = JSON.parse(response['responseText']); 
+				if(data['errors']){
+					errors= data['errors']  
+					$('small.error').remove();
+					for(key in errors){  
+						if ($(`[name="${key}Error"`).length){
+							$(`[name="${key}Error"]`).text(errors[key]);
+						}else{ 
+							$(`[name="${key}"`).parent().append(`<small name="${key}Error" class="error" style="color:red">${errors[key]}</small>`);
+						}
+					}  
+				}else{
+					alert(data['data']);
+				}	
+			} 
+  })
+
+})
+
+
+//---------------certificate  part
+
+$('#certificateLinkId').on('click', function(e){
+  e.preventDefault();
+  const href = $(this).attr('href');
+  
+  $.get(href, function(response){
+    $('#dataContainerId').empty().append(response);
+  })
+})
+
+$('#addOwnerCertificateId').on('click',function(e){
+  e.preventDefault();
+  $.get($(this).attr('href'), function(response){ 
+    $('#addOwnerCertificateModalId .modal-content').empty().append(response);
+    $('#addOwnerCertificateModalId').modal('show');
+  })
+})
+
+$('.modal').on('submit', '#ownerCertificateFormId', function(e){
+  e.preventDefault();
+  const url = "{% url 'accounts:add_owner_certificate' %}";
+  let formData = new FormData(this);
+
+  // for(let i of formData.entries()){
+  //   console.log(i)
+  // }  
+
+  $.ajax({
+    url: url,
+    method: 'POST',
+    data:formData,
+    processData: false,
+    contentType: false,
+
+    success:function(response){
+      alert("success");
+      location.reload();
+    },
+
+    error: function(response){
+      data = JSON.parse(response['responseText']); 
+				if(data['errors']){
+					errors= data['errors']  
+					$('small.error').remove();
+					for(key in errors){ 
+						if ($(`[name="${key}Error"`).length){
+							$(`[name="${key}Error"]`).text(errors[key]);
+						}else{ 
+							$(`[name="${key}"`).parent().append(`<small name="${key}Error" class="error" style="color:red">${errors[key]}</small>`);
+						}
+					}  
+				}else{
+					alert(data['data']);
+				}	
+			} 
+
+  })
+
+})
+
+//----------------reservation part
+
+$('#reservationLinkId').on('click', function(e){
+  e.preventDefault();
+  const href = $(this).attr('href');
+  
+  $.get(href, function(response){
+    $('#dataContainerId').empty().append(response);
+  })
+})
+
+$('#myHotelLinkId').on('click', function(e){
+  e.preventDefault();
+  const href = $(this).attr('href');
+  
+  $.get(href, function(response){ 
+    $('#dataContainerId').empty().append(response);
+  }).fail(function(){
+    alert('error');
+  })
+  
+})
+
+$('body').on('click','#reservationDetailId',function(e){
+  e.preventDefault();
+  const href = $(this).attr('href');
+
+  $.get(href, function(response){
+    $('#reservationModalId .modal-content').empty().append(response);
+    $('#reservationModalId').modal('show');
+
+  });
+})
+
+$('body').on('submit','#cancelBookingId', function(e){
+  e.preventDefault();
+  const reservationId = $(this).attr('data-reservationId');
+  let url = "{% url 'accounts:reservation_cancel' 11 %}".replace(11, reservationId); 
+
+  if(confirm('Are your sure you want to cancel this reservation?')){
+
+    $.post( url ,{csrfmiddlewaretoken :  $('[name="csrfmiddlewaretoken"]').val()}, function() {
+      alert( "Reservation cancelled successfully." );
+      closeModal();
+      location.reload();
+    }).fail(function() {
+      alert( "error" );
+    });
+  }
+  
+})
+
+
+//------- Payment
+
+function verifyPayment(payload){
+  $.ajax({
+    url:"{% url 'accounts:verify-payment' %}",
+    type: "POST",
+    data: payload,
+    dataType: 'json',
+    success: function(response){
+      console.log(response)
+      alert(response);
+      location.reload();
+    },
+    error: function (response){
+      console.log(response)
+      alert(response.responseJSON['message']);
+    }
+  });
+}
+
+// var btn = document.getElementById("payment-button");
+$('body').on('click', '#payment-button', function (e) {
+  e.preventDefault();
+  const reservationid = $(this).data('reservationid'); 
+  const amount = $(this).data('amount'); 
+  const payment_public_key = "{{ payment_public_key }}";
+  // console.log(payment_public_key);
+
+  var config = {
+            // replace the publicKey with yours
+            "publicKey": payment_public_key,
+            "productIdentity": reservationid,	
+            "productName": "Dragon",
+            "productUrl": "http://gameofthrones.wikia.com/wiki/Dragons",
+            "paymentPreference": [
+                "KHALTI", 
+                ],
+            "eventHandler": {
+                onSuccess (payload) {
+                    // hit merchant api for initiating verfication
+                    // console.log(payload);
+                    verifyPayment(payload);
+                },
+                onError (error) {
+                    console.log(error);
+                },
+                onClose () {
+                    console.log('widget is closing');
+                }
+            }
+        };
+  closeModal();
+  var checkout = new KhaltiCheckout(config);
+
+	// minimum transaction amount must be 10, i.e 1000 in paisa.
+  console.log(amount*100)
+	// checkout.show({amount: amount*100});
+  checkout.show({amount:1000})
+})
+
+</script>
+
+{% endblock %}

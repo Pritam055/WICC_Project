@@ -1,0 +1,15 @@
+{% load static %}
+{% for hotel in hotel_list %}
+<div class="col-sm-3 mt-3 mb-2" >
+    <div class="card card-hover" id="card1" >
+        {% with h=hotel.hotel_images.all %} 
+            <img src="{% if h.count > 0 %} {{h.first.image.url}} {% else %} {% static 'default_hotel.jpeg' %} {% endif %}" style="height: 280px; width:100%;" class="card-img-top" alt="...">
+        {% endwith %}
+        <div class="card-body">
+            <a href="{% url 'hotels:hotel_detail' hotel.owner.id %}" style="text-decoration: none;"><h5 class="card-title">{{hotel.name|truncatechars:18}}</h5></a>
+            <p class="card-text">{{ hotel.address|truncatechars:35 }}</p> 
+            <p class="alert alert-secondary">Per Room Price: <b>NPR{{hotel.room_price}}</b></p>
+        </div>
+    </div>
+</div> 
+{% endfor %}

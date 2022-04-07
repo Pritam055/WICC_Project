@@ -1,0 +1,87 @@
+
+<div class="modal-header"> 
+    <p style="font-family: 'Brush Script MT', cursive; font-size:26px; display: inline; " >Customer Reservation Detail</p>
+</div>   
+
+<div class="modal-body"> 
+
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th scope="row">Hotel Name</th>
+                <td>{{reservation.hotel}}</td>
+            </tr>
+            <tr>
+                <th scope="row">No. of rooms</th>
+                <td>{{reservation.no_of_rooms}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Reserved Date</th>
+                <td>{{reservation.reserved_date}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Total Amount</th>
+                <td>NPR{{reservation.amount}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Phone</th>
+                <td>{{reservation.phone}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Checkin-Date</th>
+                <td>
+                    {% if reservation.checkin_date %}
+                        {{reservation.checkin_date}}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Checkout-Date</th>
+                <td>
+                    {% if reservation.checkout_date %}
+                        {{reservation.checkout_date}}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Payment method</th>
+                <td>{{reservation.payment_method}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Paid</th>
+                <td>
+                    <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" disabled {% if reservation.paid %}checked{% endif %}>
+                </td>
+            </tr>   
+            <tr>
+                <th scope="row">Checkin-Status</th>
+                <td>
+                    <small class='badge bg-{% if reservation.checkin_status == "reserved" %}warning text-dark{% elif reservation.checkin_status == "checked_in" %}info text-dark{% else %}success{% endif %}'>{{reservation.checkin_status}}</small>
+                </td>
+            </tr>
+
+            {% if reservation.checkin_status == "reserved" %}
+            <tr>
+                <th scope="row">Cancel Booking</th>
+                <td> 
+                    <form method="post" id="cancelBookingId" data-reservationId="{{reservation.id}}">
+                        {% csrf_token %}
+                        <input type="submit"  class="btn btn-danger" value="Cancel Booking" style="width: 100%;" />
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-footer">  
+    {% if  reservation.checkin_status != "checked_out" or reservation.paid == False %}
+        <a href="{% url 'accounts:update_customer_reservation' reservation.id %}" id="updateCustomerReservationId" class="btn btn-info" style="padding-left: 30px; padding-right: 30px;">Update Detail</a>
+    {% endif %}
+    <button type="button" onclick="closeModal()" class="btn btn-secondary" data-bs-dismiss="modal" style="padding-left: 30px; padding-right: 30px;">Close</button>
+</div> 

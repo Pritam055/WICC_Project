@@ -1,0 +1,91 @@
+<div class="row">
+            
+    <div class="col-sm-3 mt-3 mb-2"  >
+      <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+           <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-primary">Total Reservations</p>
+          <div class="card-body"> 
+            <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;" >{{reservation_list.count}}</p>
+          </div>
+      </div>
+    </div> 
+    <div class="col-sm-3 mt-3 mb-2"  >
+        <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+             <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-danger">Reserved Count</p>
+            <div class="card-body"> 
+              <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;" >{{reserved_count}}</p>
+            </div>
+        </div>
+    </div> 
+    <div class="col-sm-3 mt-3 mb-2"  >
+        <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+             <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-success" >Checked-in Count</p>
+            <div class="card-body"> 
+              <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;"   >{{checked_in_count}}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-3 mt-3 mb-2"  >
+      <div class="card card-hover" id="card1" style="text-align: center; border-radius: 12px;" >
+           <p style="font-family: 'Brush Script MT', cursive; font-size:28px; display: inline;" class="text-success" >Checked-out Count</p>
+          <div class="card-body"> 
+            <p style="font-family: 'Brush Script MT', cursive; font-size:24px; display: inline;"   >{{checked_out_count}}</p>
+          </div>
+      </div>
+  </div>
+
+</div>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <p style="font-family: 'Brush Script MT', cursive; font-size:35px; display: inline;" >All Reservations</p>
+    <div class="btn-toolbar mb-2 mb-md-0"> 
+        <select class="btn  btn-outline-secondary dropdown-toggle" id="selectReservationGroupId">
+            <option value="">Select Hotel</option>
+            {% for h in hotel_name_list %}
+              <option>{{h.name}}</option>
+            {% endfor %}
+          </select>
+    </div>
+</div> 
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+    <thead>
+        <tr>
+        <th scope="col">#</th>
+        <th scope="col">Username</th>
+        <th scope="col">Hotel</th>
+        <th scope="col">No. of rooms</th> 
+        <th scope="col">Reserved Date</th> 
+        <th scope="col">Checkin-Status</th>
+        <th scope="col">Paid</th>
+        <th></th>
+        </tr>
+    </thead>
+    <tbody id="tbodyId">
+        {% for r in reservation_list %} 
+            <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{r.customer.username}}</td>
+                <td>{{r.hotel.name}}</td>
+                <td>{{r.no_of_rooms}}</td>
+                <td>{{r.reserved_date}}</td> 
+                <td>
+                  <small class='badge bg-{% if r.checkin_status == "reserved" %}warning text-dark{% elif r.checkin_status == "checked_in" %}info text-dark{% else %}success{% endif %}'>{{r.checkin_status}}</small>
+                </td>
+                <td>
+                    {% if r.paid %}
+                      <input class="form-check-input" type="checkbox" disabled checked>
+                    {% else %}
+                      <input class="form-check-input" type="checkbox" disabled >
+                    {% endif %}
+                  </td>
+                <td>
+                    <a href="{% url 'accounts:reservation_details' r.id %}" class="btn btn-info" id="reservationDetailId">Details</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody> 
+    </table>
+    
+</div>
